@@ -1,0 +1,30 @@
+FROM ubuntu:22.04 AS build
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Moscow
+
+COPY ./comments-service /comments-service
+WORKDIR /comments-service/build
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y \
+    python3-pip \
+    cmake && \
+    pip3 install conan --upgrade && \
+    conan profile detect && \
+    conan install .. --output-folder=. --build=missing && \ 
+    source conanbuild.sh && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake --build . && \
+    source deactivate_conanbuild.sh
+
+FROM ubuntu:22.04
+
+RUN groupadd dev && useradd -g dev dev
+USER dev
+COPY --chown=dev:dev --from=build /comments-service/build/comments-service /app/comments-service
+
+CMD ["/app/comments-service", "0.0.0.0", "8080"]
+EXPOSE 8080
