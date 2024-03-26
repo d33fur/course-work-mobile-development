@@ -1,32 +1,24 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.28.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.28.4)
 
 PROJECT(videochat LANGUAGES CXX)
 
 INCLUDE(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
 
 SET(CMAKE_CXX_STANDARD 20)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_VERBOSE_MAKEFILE ON)
-# SET(DTHREADS_PREFER_PTHREAD_FLAG ON)
 
-# FIND_PACKAGE(libpqxx REQUIRED)
-# FIND_PACKAGE(Boost REQUIRED)
-# FIND_PACKAGE(Threads REQUIRED)
-# FIND_PACKAGE(nlohmann_json REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(libpqxx REQUIRED)
+FIND_PACKAGE(nlohmann_json REQUIRED)
 
+ADD_EXECUTABLE(auth 
+    source/auth.cpp 
+    source/auth.hpp
+    )
 
-SET(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
-
-FILE(GLOB_RECURSE SOURCES
-    ${INCLUDE_DIR}/*.hpp
-    ${SOURCE_DIR}/*.cpp)
-
-ADD_EXECUTABLE(auth ${SOURCES})
-
-# TARGET_LINK_LIBRARIES(auth PRIVATE 
-    # ${Boost_LIBRARIES} 
-    # boost::boost
-    # Threads::Threads
-    # nlohmann_json::nlohmann_json
-    # libpqxx::pqxx
-    # )
+TARGET_LINK_LIBRARIES(auth PRIVATE 
+    ${Boost_LIBRARIES}
+    Threads::Threads
+    nlohmann_json::nlohmann_json
+    libpqxx::pqxx
+    )

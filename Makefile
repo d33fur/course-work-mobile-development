@@ -36,9 +36,9 @@ local: conan-rebuild local-rebuild
 
 .PHONY: local-rebuild
 local-rebuild:
-	@(cd backend/build/build/Release/generators && \
+	@(cd backend/build && \
 	source conanbuild.sh && \
-	cmake -DCMAKE_BUILD_TYPE=Release ../../../.. && \
+	cmake -DCMAKE_BUILD_TYPE=Release .. && \
 	cmake --build . && \
 	source deactivate_conanbuild.sh && \
 	./auth 0.0.0.0 8001 . 1)

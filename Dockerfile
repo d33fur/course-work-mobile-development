@@ -5,19 +5,18 @@ ENV TZ=Europe/Moscow
 ENV PATH="/root/.local/bin:$PATH"
 
 COPY ./backend /app
-WORKDIR /app
+WORKDIR /app/build
 
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
     apt-get install -y \
     pipx && \
+    # libboost-all-dev && \
     pipx install cmake && \
     pipx install conan
-    #  && \
     # pipx ensurepath
-    
-WORKDIR /app/build
+    # export PATH="$PATH:~/.local/bin"
 
 RUN conan profile detect && \
     mv /app/cxxprofile ~/.conan2/profiles/cxxprofile && \
@@ -27,7 +26,7 @@ RUN conan profile detect && \
     cmake --build . && \
     source deactivate_conanbuild.sh
 
-# FROM ubuntu:22.04
+# FROM ubuntu:24.04
 
 # RUN groupadd dev && useradd -g dev dev
 # USER dev

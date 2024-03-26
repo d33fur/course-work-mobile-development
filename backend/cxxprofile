@@ -2,10 +2,10 @@
 arch=x86_64
 build_type=Release
 compiler=gcc
-compiler.cppstd=20
+compiler.cppstd=23
 compiler.libcxx=libstdc++11
 compiler.version=13.2
 os=Linux
 [options]
-boost/1.84.0:without_locale=True
-boost/1.84.0:without_stacktrace=True
+; boost/1.84.0:without_locale=True
+; boost/1.84.0:without_stacktrace=True
