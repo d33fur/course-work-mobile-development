@@ -1,30 +1,32 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.28.1)
 
-PROJECT(comments-service LANGUAGES CXX)
+PROJECT(videochat LANGUAGES CXX)
 
 INCLUDE(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
 
 SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_VERBOSE_MAKEFILE ON)
+# SET(DTHREADS_PREFER_PTHREAD_FLAG ON)
 
-FIND_PACKAGE(Boost 1.82.0 REQUIRED)
-FIND_PACKAGE(Threads REQUIRED)
-FIND_PACKAGE(nlohmann_json REQUIRED)
-FIND_PACKAGE(cassandra-cpp-driver REQUIRED)
+# FIND_PACKAGE(libpqxx REQUIRED)
+# FIND_PACKAGE(Boost REQUIRED)
+# FIND_PACKAGE(Threads REQUIRED)
+# FIND_PACKAGE(nlohmann_json REQUIRED)
 
-SET(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+
 SET(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
 
 FILE(GLOB_RECURSE SOURCES
     ${INCLUDE_DIR}/*.hpp
     ${SOURCE_DIR}/*.cpp)
 
-INCLUDE_DIRECTORIES(
-    ${INCLUDE_DIR})
+ADD_EXECUTABLE(auth ${SOURCES})
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES})
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE 
-    ${Boost_LIBRARIES} 
-    Threads::Threads
-    nlohmann_json::nlohmann_json
-    cassandra-cpp-driver::cassandra-cpp-driver)
+# TARGET_LINK_LIBRARIES(auth PRIVATE 
+    # ${Boost_LIBRARIES} 
+    # boost::boost
+    # Threads::Threads
+    # nlohmann_json::nlohmann_json
+    # libpqxx::pqxx
+    # )

@@ -36,19 +36,19 @@ local: conan-rebuild local-rebuild
 
 .PHONY: local-rebuild
 local-rebuild:
-	@(cd comments-service/build && \
+	@(cd backend/build/build/Release/generators && \
 	source conanbuild.sh && \
-	cmake -DCMAKE_BUILD_TYPE=Release .. && \
+	cmake -DCMAKE_BUILD_TYPE=Release ../../../.. && \
 	cmake --build . && \
 	source deactivate_conanbuild.sh && \
-	./comments-service 0.0.0.0 8080)
+	./auth 0.0.0.0 8001 . 1)
 
 .PHONY: conan-rebuild
 conan-rebuild:
-	@(rm -rf comments-service/build/ && \
-	mkdir comments-service/build && \
-	cd comments-service/build && \
-	conan install .. --output-folder=. --build=missing)
+	@(rm -rf backend/build/ && \
+	mkdir backend/build && \
+	cd backend/build && \
+	conan install .. --profile=cxxprofile --output-folder=. --build=missing)
 
 .PHONY: db-cqlsh
 db-cqlsh:

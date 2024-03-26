@@ -1,2 +1,2 @@
-comments-service/build
-/comments-service/CMakeUserPresets.json
+backend/build
+backend/CMakeUserPresets.json
