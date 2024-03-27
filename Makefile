@@ -6,22 +6,22 @@ server-all: server-rebuild server-start
 .PHONY: server-build
 server-build:
 	cd server && \
-	docker-compose build
+	docker compose build
 
 .PHONY: server-rebuild
 server-rebuild:
 	cd server && \
-	docker-compose build --force-rm
+	docker compose build --force-rm
 
 .PHONY: server-start
 server-start:
 	cd server && \
-	docker-compose up -d
+	docker compose up -d
 
 .PHONY: server-stop
 server-stop:
 	cd server && \
-	docker-compose stop
+	docker compose stop
 
 .PHONY: server-restart
 server-restart: server-stop server-start
@@ -29,13 +29,13 @@ server-restart: server-stop server-start
 .PHONY: server-logs
 server-logs:
 	cd server && \
-	docker-compose logs -f --tail 100
+	docker compose logs -f --tail 100
 
 .PHONY: server-clear
 server-clear:
 	@(cd server && \
-	docker-compose kill  && \
-	docker-compose rm -f) 
+	docker compose kill  && \
+	docker compose rm -f) 
 
 .PHONY: server-local-all
 server-local-all: server-local-conan-reinstall server-local-rebuild
