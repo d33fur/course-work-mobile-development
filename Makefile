@@ -1,59 +1,65 @@
 SHELL := /bin/bash
 
-.PHONY: all
-all: rebuild start
+.PHONY: server-all
+server-all: server-rebuild server-start
 
-.PHONY: build
-build:
+.PHONY: server-build
+server-build:
+	cd server && \
 	docker-compose build
 
-.PHONY: rebuild
-rebuild:
+.PHONY: server-rebuild
+server-rebuild:
+	cd server && \
 	docker-compose build --force-rm
 
-.PHONY: start
-start:
+.PHONY: server-start
+server-start:
+	cd server && \
 	docker-compose up -d
 
-.PHONY: stop
-stop:
+.PHONY: server-stop
+server-stop:
+	cd server && \
 	docker-compose stop
 
-.PHONY: restart
-restart: stop start
+.PHONY: server-restart
+server-restart: server-stop server-start
 
-.PHONY: logs
-logs:
+.PHONY: server-logs
+server-logs:
+	cd server && \
 	docker-compose logs -f --tail 100
 
-.PHONY: clear
-clear:
-	@(docker-compose kill  && \
+.PHONY: server-clear
+server-clear:
+	@(cd server && \
+	docker-compose kill  && \
 	docker-compose rm -f) 
 
-.PHONY: local
-local: conan-rebuild local-rebuild
+.PHONY: server-local-all
+server-local-all: server-local-conan-reinstall server-local-rebuild
 
-.PHONY: local-rebuild
-local-rebuild:
-	@(cd backend/build && \
+.PHONY: server-local-rebuild
+server-local-rebuild:
+	@(cd server/build && \
 	source conanbuild.sh && \
 	cmake -DCMAKE_BUILD_TYPE=Release .. && \
 	cmake --build . && \
 	source deactivate_conanbuild.sh && \
 	./auth 0.0.0.0 8001 . 1)
 
-.PHONY: conan-rebuild
-conan-rebuild:
-	@(rm -rf backend/build/ && \
-	mkdir backend/build && \
-	cd backend/build && \
+.PHONY: server-local-conan-reinstall
+server-local-conan-reinstall:
+	@(rm -rf server/build/ && \
+	mkdir server/build && \
+	cd server/build && \
 	conan install .. --profile=cxxprofile --output-folder=. --build=missing)
 
-.PHONY: db-cqlsh
-db-cqlsh:
-	@(docker exec -it scylla-node1 cqlsh)
+# .PHONY: db-cqlsh
+# db-cqlsh:
+# 	@(docker exec -it scylla-node1 cqlsh)
 
-.PHONY: db-init
-db-init:
-	@(docker exec scylla-node1 cqlsh -f /scylla-init.txt)
+# .PHONY: db-init
+# db-init:
+# 	@(docker exec scylla-node1 cqlsh -f /scylla-init.txt)

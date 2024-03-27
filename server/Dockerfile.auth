@@ -4,19 +4,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Moscow
 ENV PATH="/root/.local/bin:$PATH"
 
-COPY ./backend /app
+COPY . /app
 WORKDIR /app/build
 
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
     apt-get install -y \
-    pipx && \
-    # libboost-all-dev && \
+    pipx  \
+    build-essential \
+    libboost-all-dev && \
     pipx install cmake && \
     pipx install conan
-    # pipx ensurepath
-    # export PATH="$PATH:~/.local/bin"
 
 RUN conan profile detect && \
     mv /app/cxxprofile ~/.conan2/profiles/cxxprofile && \
@@ -26,11 +25,11 @@ RUN conan profile detect && \
     cmake --build . && \
     source deactivate_conanbuild.sh
 
-# FROM ubuntu:24.04
+FROM ubuntu:24.04
 
-# RUN groupadd dev && useradd -g dev dev
-# USER dev
-# COPY --chown=dev:dev --from=build /app/build/lobby /app/lobby
+RUN groupadd dev && useradd -g dev dev
+USER dev
+COPY --chown=dev:dev --from=build /app/build/auth /app/auth
 # COPY --chown=dev:dev --from=build /app/build/game /app/game
 
 # RUN apt-get update && \
@@ -40,7 +39,9 @@ RUN conan profile detect && \
 
 # ENV HOME /app
 
+CMD ["/app/auth", "0.0.0.0", "8001", ".", "1"]
+
 # CMD ["/usr/bin/supervisord"]
 
-# # CMD ["/app/lobby", "0.0.0.0", "8080"]
+# CMD ["/app/lobby", "0.0.0.0", "8080"]
 # EXPOSE 8080
