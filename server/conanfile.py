@@ -8,3 +8,4 @@ class Audio2WaveformConan(ConanFile):
     # self.requires("boost/1.84.0")
     self.requires("libpqxx/7.9.0")
     self.requires("nlohmann_json/3.11.3")
+    self.requires("redis-plus-plus/1.3.12")

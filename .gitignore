@@ -2,6 +2,7 @@ server/build
 server/CMakeUserPresets.json
 server/databases/postgresql/data
 server/databases/redis/data
+server/databases/scylladb/data
 temp.cpp
-./vscode
+.vscode
 server.cpp

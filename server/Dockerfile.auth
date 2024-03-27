@@ -30,18 +30,7 @@ FROM ubuntu:24.04
 RUN groupadd dev && useradd -g dev dev
 USER dev
 COPY --chown=dev:dev --from=build /app/build/auth /app/auth
-# COPY --chown=dev:dev --from=build /app/build/game /app/game
 
-# RUN apt-get update && \
-#     apt-get install -y supervisor
+CMD ["/app/auth", "0.0.0.0", "8001", "1"]
 
-# COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# ENV HOME /app
-
-CMD ["/app/auth", "0.0.0.0", "8001", ".", "1"]
-
-# CMD ["/usr/bin/supervisord"]
-
-# CMD ["/app/lobby", "0.0.0.0", "8080"]
-# EXPOSE 8080
+EXPOSE 8001

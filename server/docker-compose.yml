@@ -11,6 +11,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+      scylladb:
+        condition: service_started
     # healthcheck:
     #   test: ["executable", "arg"]
     #   interval: 1m30s
@@ -55,22 +57,23 @@ services:
     ports:
       - 6379:6379
 
+  scylladb:
+    container_name: scylladb
+    image: scylladb/scylla:5.4.1
+    command: --seeds=scylladb --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    volumes:
+      - ./databases/scylladb/init/init.txt:/init.txt
+      - ./databases/scylladb/data:/var/lib/scylla
+    restart: always
+    healthcheck:
+      test: ["CMD", "nodetool", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - web
+
 networks:
   web:
     driver: bridge
 
-  # scylla-node1:
-  #   image: scylladb/scylla:5.4.1
-  #   container_name: scylla-node1
-  #   restart: always
-  #   command: --seeds=scylla-node1 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
-  #   volumes:
-  #     - ./scylla/scylla-data:/var/lib/scylla
-  #     - ./scylla/scylla-init.txt:/scylla-init.txt
-  #   networks:
-  #     - web
-  #   healthcheck:
-  #     test: ["CMD", "nodetool", "status"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5

@@ -9,6 +9,7 @@ SET(CMAKE_CXX_STANDARD 20)
 FIND_PACKAGE(Boost REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(libpqxx REQUIRED)
+find_package(redis++ REQUIRED)
 FIND_PACKAGE(nlohmann_json REQUIRED)
 
 ADD_EXECUTABLE(auth 
@@ -21,4 +22,5 @@ TARGET_LINK_LIBRARIES(auth PRIVATE
     Threads::Threads
     nlohmann_json::nlohmann_json
     libpqxx::pqxx
+    redis++::redis++_static
     )
