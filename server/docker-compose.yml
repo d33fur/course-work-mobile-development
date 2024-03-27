@@ -58,7 +58,7 @@ services:
 
   scylladb:
     container_name: scylladb
-    image: scylladb/scylla:5.4.1
+    image: scylladb/scylla:latest
     command: --seeds=scylladb --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
     volumes:
       - ./databases/scylladb/init/init.txt:/init.txt

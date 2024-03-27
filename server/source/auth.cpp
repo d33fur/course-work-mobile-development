@@ -18,18 +18,9 @@ namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
-// Append an HTTP rel-path to a local filesystem path.
-// The returned path is normalized for the platform.
-
-// Return a response for the given request.
-//
-// The concrete type of the response message (which depends on the
-// request), is type-erased in message_generator.
 template <class Body, class Allocator>
-http::message_generator handle_request(
-  http::request<Body, 
+http::message_generator handle_request(http::request<Body, 
   http::basic_fields<Allocator>>&& req) {
-    // Returns a bad request response
     auto const bad_request = [&req](beast::string_view why) {
       http::response<http::string_body> res{http::status::bad_request, req.version()};
       res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -40,7 +31,6 @@ http::message_generator handle_request(
       return res;
     };
 
-    // Returns a not found response
     auto const not_found = [&req](beast::string_view target) {
       http::response<http::string_body> res{http::status::not_found, req.version()};
       res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -51,7 +41,6 @@ http::message_generator handle_request(
       return res;
     };
 
-    // Returns a server error response
     auto const server_error = [&req](beast::string_view what) {
       http::response<http::string_body> res{http::status::internal_server_error, req.version()};
       res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -62,134 +51,73 @@ http::message_generator handle_request(
       return res;
     };
 
-    // Make sure we can handle the method
     if(req.method() != http::verb::get &&
       req.method() != http::verb::head) {
         return bad_request("Unknown HTTP-method");
       }
 
-    // Request path must be absolute and not contain "..".
-    if(req.target().empty() ||
-      req.target()[0] != '/' ||
-      req.target().find("..") != beast::string_view::npos) {
-        return bad_request("Illegal request-target");
-      }
-
-
-    // Attempt to open the file
-    beast::error_code ec;
-    http::file_body::value_type body;
-    body.open(path.c_str(), beast::file_mode::scan, ec);
-
-    // Handle the case where the file doesn't exist
-    if(ec == beast::errc::no_such_file_or_directory) {
-      return not_found(req.target());
-    }
-    // Handle an unknown error
-    if(ec) {
-      return server_error(ec.message());
-    }
-    // Cache the size since we need it after the move
-    auto const size = body.size();
-
-    // Respond to HEAD request
-    if(req.method() == http::verb::head) {
-      http::response<http::empty_body> res{http::status::ok, req.version()};
+    if (req.target() == "/api/example") {
+      http::response<http::string_body> res{http::status::ok, req.version()};
       res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-      res.set(http::field::content_type, mime_type(path));
-      res.content_length(size);
+      res.set(http::field::content_type, "application/json");
       res.keep_alive(req.keep_alive());
+      res.body() = "{\"message\": \"Hello, World!\"}";
+      res.prepare_payload();
       return res;
     }
 
-    // Respond to GET request
-    http::response<http::file_body> res{
-      std::piecewise_construct,
-      std::make_tuple(std::move(body)),
-      std::make_tuple(http::status::ok, req.version())};
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(http::field::content_type, mime_type(path));
-    res.content_length(size);
-    res.keep_alive(req.keep_alive());
-    return res;
+    return not_found(req.target());
 }
 
 //------------------------------------------------------------------------------
 
-// Report a failure
 void fail(beast::error_code ec, char const* what) {
   std::cerr << what << ": " << ec.message() << "\n";
 }
 
-// Handles an HTTP server connection
 class session : public std::enable_shared_from_this<session> {
   beast::tcp_stream stream_;
   beast::flat_buffer buffer_;
   http::request<http::string_body> req_;
 
   public:
-    // Take ownership of the stream
-    session(
-      tcp::socket&& socket) : stream_(std::move(socket)) {
+    session(tcp::socket&& socket) : stream_(std::move(socket)) {
     }
 
-    // Start the asynchronous operation
     void run() {
-      // We need to be executing within a strand to perform async operations
-      // on the I/O objects in this session. Although not strictly necessary
-      // for single-threaded contexts, this example code is written to be
-      // thread-safe by default.
-      net::dispatch(stream_.get_executor(),
-        beast::bind_front_handler(
-          &session::do_read,
-          shared_from_this()));
+      net::dispatch(stream_.get_executor(), beast::bind_front_handler(
+        &session::do_read, shared_from_this()));
     }
 
     void do_read() {
-      // Make the request empty before reading,
-      // otherwise the operation behavior is undefined.
       req_ = {};
-
-      // Set the timeout.
       stream_.expires_after(std::chrono::seconds(30));
 
-      // Read a request
-      http::async_read(stream_, buffer_, req_,
-        beast::bind_front_handler(
-          &session::on_read,
-          shared_from_this()));
+      http::async_read(stream_, buffer_, req_, beast::bind_front_handler(
+        &session::on_read, shared_from_this()));
     }
 
-    void on_read(
-      beast::error_code ec,
-      std::size_t bytes_transferred) {
-        boost::ignore_unused(bytes_transferred);
+    void on_read(beast::error_code ec, std::size_t bytes_transferred) {
+      boost::ignore_unused(bytes_transferred);
 
-        // This means they closed the connection
-        if(ec == http::error::end_of_stream) {
-          return do_close();
-        }
-        if(ec) {
-          return fail(ec, "read");
-        }
-        // Send the response
-        send_response(handle_request(std::move(req_)));
+      if(ec == http::error::end_of_stream) {
+        return do_close();
+      }
+      if(ec) {
+        return fail(ec, "read");
+      }
+
+      send_response(handle_request(std::move(req_)));
     }
 
     void send_response(http::message_generator&& msg) {
       bool keep_alive = msg.keep_alive();
 
-      // Write the response
-      beast::async_write(
-        stream_,
-        std::move(msg),
-        beast::bind_front_handler(
-          &session::on_write, shared_from_this(), keep_alive));
+      beast::async_write(stream_, std::move(msg), beast::bind_front_handler(
+        &session::on_write, shared_from_this(), keep_alive));
     }
 
-    void on_write(
-      bool keep_alive,
-      beast::error_code ec,
+    void on_write(bool keep_alive, beast::error_code ec, 
       std::size_t bytes_transferred) {
         boost::ignore_unused(bytes_transferred);
 
@@ -197,61 +125,47 @@ class session : public std::enable_shared_from_this<session> {
           return fail(ec, "write");
         }
         if(!keep_alive) {
-          // This means we should close the connection, usually because
-          // the response indicated the "Connection: close" semantic.
           return do_close();
         }
 
-        // Read another request
         do_read();
     }
 
     void do_close() {
-      // Send a TCP shutdown
       beast::error_code ec;
       stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
-
-      // At this point the connection is closed gracefully
     }
 };
 
 //------------------------------------------------------------------------------
 
-// Accepts incoming connections and launches the sessions
 class listener : public std::enable_shared_from_this<listener> {
   net::io_context& ioc_;
   tcp::acceptor acceptor_;
 
   public:
-    listener(
-      net::io_context& ioc,
-      tcp::endpoint endpoint)
-      : ioc_(ioc),
-      acceptor_(net::make_strand(ioc)) {
+    listener(net::io_context& ioc, tcp::endpoint endpoint)
+      : ioc_(ioc), acceptor_(net::make_strand(ioc)) {
         beast::error_code ec;
 
-        // Open the acceptor
         acceptor_.open(endpoint.protocol(), ec);
         if(ec) {
           fail(ec, "open");
           return;
         }
 
-        // Allow address reuse
         acceptor_.set_option(net::socket_base::reuse_address(true), ec);
         if(ec) {
           fail(ec, "set_option");
           return;
         }
 
-        // Bind to the server address
         acceptor_.bind(endpoint, ec);
         if(ec) {
           fail(ec, "bind");
           return;
         }
 
-        // Start listening for connections
         acceptor_.listen(net::socket_base::max_listen_connections, ec);
         if(ec) {
           fail(ec, "listen");
@@ -259,58 +173,45 @@ class listener : public std::enable_shared_from_this<listener> {
         }
     }
 
-    // Start accepting incoming connections
     void run() {
       do_accept();
     }
 
   private:
     void do_accept() {
-        // The new connection gets its own strand
-      acceptor_.async_accept(
-        net::make_strand(ioc_),
-        beast::bind_front_handler(
-          &listener::on_accept,
-          shared_from_this()));
+      acceptor_.async_accept(net::make_strand(ioc_), beast::bind_front_handler(
+        &listener::on_accept, shared_from_this()));
     }
 
     void on_accept(beast::error_code ec, tcp::socket socket) {
       if(ec) {
         fail(ec, "accept");
-        return; // To avoid infinite loop
+        return;
       }
       else {
-        // Create the session and run it
         std::make_shared<session>(std::move(socket))->run();
       }
 
-      // Accept another connection
       do_accept();
     }
 };
 
-//------------------------------------------------------------------------------
-
 int main(int argc, char* argv[]) {
-  // Check command line arguments.
-  if(argc != 5) {
-    std::cerr <<
-      "Usage: http-server-async <address> <port> <threads>\n" <<
-      "Example:\n   " <<
-      "./auth 0.0.0.0 8080 1\n";
+  if(argc != 4) {
+    std::cerr 
+      << "Usage: auth <address> <port> <threads>\n"
+      << "Example:\n"
+      << "auth 0.0.0.0 8080 1\n";
     return EXIT_FAILURE;
   }
+
   auto const address = net::ip::make_address(argv[1]);
   auto const port = static_cast<unsigned short>(std::atoi(argv[2]));
   auto const threads = std::max<int>(1, std::atoi(argv[3]));
 
-  // The io_context is required for all I/O
   net::io_context ioc{threads};
-
-  // Create and launch a listening port
   std::make_shared<listener>(ioc, tcp::endpoint{address, port})->run();
 
-  // Run the I/O service on the requested number of threads
   std::vector<std::thread> v;
   v.reserve(threads - 1);
   for(auto i = threads - 1; i > 0; --i) {
@@ -319,6 +220,7 @@ int main(int argc, char* argv[]) {
       ioc.run();
     });
   }
+
   ioc.run();
 
   return EXIT_SUCCESS;
