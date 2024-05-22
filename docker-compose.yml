@@ -1,0 +1,36 @@
+services:
+  postgresql-python:
+    container_name: postgresql-python
+    image: postgres:latest
+    env_file: 
+      - ./.env
+    volumes:
+      - ./database/init/:/docker-entrypoint-initdb.d
+      - ./database/data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "sh -c 'pg_isready -d ${POSTGRES_DB}'"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    ports:
+      - 5432:5432
+    networks:
+      - web
+
+  fastapi:
+    container_name: fastapi
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      - postgresql-python
+    ports:
+      - "8000:8000"
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
