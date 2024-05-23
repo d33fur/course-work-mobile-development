@@ -1,5 +1,5 @@
 # course-work-mobile-development
 
 ```bash
-chmod +x prepare.sh && ./prepare.sh
+cd backend && chmod +x prepare.sh && ./prepare.sh
 ```
