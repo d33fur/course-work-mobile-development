@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_word_of_the_day"
+        android:title="Слово дня" />
+    <item
+        android:id="@+id/nav_all_words"
+        android:title="Все слова" />
+    <item
+        android:id="@+id/nav_favorites"
+        android:title="Избранное" />
+    <item
+        android:id="@+id/nav_calendar"
+        android:title="Календарь" />
+    <item
+        android:id="@+id/nav_settings"
+        android:title="Настройки" />
+</menu>
