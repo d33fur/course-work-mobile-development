@@ -22,8 +22,7 @@ class CalendarPagerAdapter(
     }
 
     override fun createFragment(position: Int): Fragment {
-        val month = position
         val year = 2024
-        return MonthFragment.newInstance(month, year, words)
+        return MonthFragment.newInstance(position, year, words)
     }
 }

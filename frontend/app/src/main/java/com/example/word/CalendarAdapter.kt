@@ -42,7 +42,6 @@ class CalendarAdapter(
         val day = daysOfMonth[position]
         holder.dayText?.text = day.toString()
 
-        // Проверяем, нужно ли отображать слово для данного дня
         if (position < words.size) {
             holder.dayText?.text = "${day}\n${words[position].first}"
         } else {

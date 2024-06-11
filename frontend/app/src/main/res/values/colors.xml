@@ -6,6 +6,6 @@
     <color name="teal_700">#018786</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="selected_button">#6200EE</color> <!-- Purple color -->
-    <color name="unselected_button">#D3D3D3</color> <!-- Light gray color -->
+    <color name="selected_button">#6200EE</color>
+    <color name="unselected_button">#D3D3D3</color>
 </resources>

@@ -120,8 +120,7 @@ class MonthFragment : Fragment() {
             set(Calendar.DAY_OF_YEAR, 1)
         }
 
-        val daysFromStartOfYear = ((calendar.timeInMillis - startOfYear.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
-        return daysFromStartOfYear
+        return ((calendar.timeInMillis - startOfYear.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
     }
 
     private fun getDayIndexForPosition(position: Int): Int {

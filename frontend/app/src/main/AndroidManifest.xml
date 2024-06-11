@@ -23,11 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WordOfDayActivity" android:exported="true" />
-        <activity android:name=".AllWordsActivity" android:exported="true" />
-        <activity android:name=".FavoritesActivity" android:exported="true" />
-        <activity android:name=".CalendarActivity" android:exported="true" />
-        <activity android:name=".SettingsActivity" android:exported="true" />
     </application>
 
 </manifest>
